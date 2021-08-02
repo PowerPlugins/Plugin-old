@@ -19,7 +19,7 @@ repositories {
 dependencies {
     implementation('org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT')
     implementation('club.minnced:discord-webhooks:0.5.8')
-    implementation('me.rayzr522:jsonmessage:1.2.1')
+    implementation('me.rayzr522:jsonmessage:1.3.0')
     implementation('com.google.guava:guava:30.1.1-jre')
     
     compileOnly('org.jetbrains:annotations:21.0.1')
