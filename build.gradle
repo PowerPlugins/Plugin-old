@@ -22,7 +22,7 @@ dependencies {
     implementation('me.rayzr522:jsonmessage:1.3.0')
     implementation('com.google.guava:guava:30.1.1-jre')
     
-    compileOnly('org.jetbrains:annotations:21.0.1')
+    compileOnly('org.jetbrains:annotations:22.0.0')
 }
 
 shadowJar {
