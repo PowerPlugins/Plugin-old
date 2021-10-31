@@ -1,11 +1,16 @@
 package net.powerplugins.bot.commands;
 
 import com.google.common.collect.Lists;
-import me.rayzr522.jsonmessage.JSONMessage;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.powerplugins.bot.PowerPlugins;
 import net.powerplugins.bot.manager.FileManager;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,34 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CmdPowerPlugins implements CommandExecutor, TabCompleter{
-    // Headers
-    public static final String HEADER_FREE    = "&b&m---------------&b[ &aFree &b]&m---------------";
-    public static final String HEADER_PREMIUM = "&b&m--------------&b[ &6Premium &b]&m--------------";
-    public static final String HEADER_PRIVATE = "&b&m--------------&b[ &7Private &b]&m--------------";
     
-    // Footers
-    public static final String FOOTER_MAIN = "&b&m-------------------------------------";
-    public static final String FOOTER_PAGE = "&b&m--------------&b[ &9Page {page} &b]&m--------------";
-    
-    // The [<] Nav item
-    public static final String NAV_PREV_ACTIVE   = "&b[&a<&b]";
-    
-    // Active and Inactive [>] Nav item
-    public static final String NAV_NEXT_ACTIVE   = "&b[&a>&b]";
-    public static final String NAV_NEXT_INACTIVE = "&b[&7>&b]";
-    
-    // Plugin infos
-    public static final String PLUGIN_SIMPLE       = "&b{name} &7- &f{author} &7[&f{version}&7]";
-    public static final String PLUGIN_NAME         = "&b{name} &7[&f{version}&7]";
-    public static final String PLUGIN_AUTHORS      = "&7Authors: &b{authors}";
-    public static final String PLUGIN_DEPENDENCIES = "&7Dependencies:";
-    public static final String PLUGIN_URL          = "&7Plugin Page: &b{url}";
-    public static final String PLUGIN_DESCRIPTION  = "&7Description:";
-    
-    // Plugin Categories
-    public static final String CAT_FREE    = "&aFree";
-    public static final String CAT_PREMIUM = "&6Premium";
-    public static final String CAT_PRIVATE = "&7Private";
+    private final TextColor BRAND_COLOUR = TextColor.color(0xF39C12);
     
     private final PowerPlugins plugin;
     
@@ -58,193 +37,156 @@ public class CmdPowerPlugins implements CommandExecutor, TabCompleter{
     
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args){
-        if(!(sender instanceof Player)){
-            sender.sendMessage(color("&cOnly Players can execute this command!"));
+        if(!(sender instanceof Player player)){
+            sender.sendMessage(Component.text("Only Players can execute this command!", NamedTextColor.RED));
             return true;
         }
-        
-        Player player = (Player)sender;
+    
         if(args.length == 0){
             clear(player);
-            
-            JSONMessage json = JSONMessage.create(color(FOOTER_MAIN))
-                    .newline()
-                    .newline()
-                    .then(color("&7Please choose a Category.")).newline()
-                    .newline()
-                    .then(color("&7[&aFree Plugins&7]"))
-                    .tooltip(color(
-                            "&7Plugins that are available for free!\n" +
-                            "\n" +
-                            "&a/plugins free"
-                    ))
-                    .runCommand("/powerplugins free")
-                    .newline()
-                    .then(color("&7[&6Premium Plugins&7]"))
-                    .tooltip(color(
-                            "&7Plugins that you have to pay for.\n" +
-                            "\n" +
-                            "&a/plugins premium"
-                    ))
-                    .runCommand("/powerplugins premium")
-                    .newline()
-                    .then(color("&7[Private Plugins&7]"))
-                    .tooltip(color(
-                            "&7Plugins made for this particular Server.\n" +
-                            "\n" +
-                            "&a/plugins private"
-                    ))
-                    .runCommand("/powerplugins private")
-                    .newline()
-                    .newline()
-                    .then(color(FOOTER_MAIN));
-            
-            json.send(player);
+    
+            TextComponent component = Component.text()
+                .append(getFooter(0))
+                .append(Component.newline())
+                .append(Component.newline())
+                .append(Component.text("Please click on a category", NamedTextColor.GRAY))
+                .append(Component.newline())
+                .append(Component.newline())
+                .append(
+                    Component.text("[", NamedTextColor.GRAY)
+                        .append(Component.text("Free Plugins", NamedTextColor.GREEN))
+                        .append(Component.text("]", NamedTextColor.GRAY))
+                        .hoverEvent(HoverEvent.showText(
+                            Component.text("Plugins you can download for free.", NamedTextColor.GRAY)
+                                .append(Component.newline())
+                                .append(Component.newline())
+                                .append(Component.text("/plugins free", NamedTextColor.GREEN))
+                        ))
+                        .clickEvent(ClickEvent.runCommand("/powerplugins free"))
+                )
+                .append(Component.newline())
+                .append(
+                    Component.text("[", NamedTextColor.GRAY)
+                        .append(Component.text("Premium Plugins", NamedTextColor.GOLD))
+                        .append(Component.text("]", NamedTextColor.GRAY))
+                        .hoverEvent(HoverEvent.showText(
+                            Component.text("Plugins you have to pay for to download.", NamedTextColor.GRAY)
+                                .append(Component.newline())
+                                .append(Component.newline())
+                                .append(Component.text("/plugins premium", NamedTextColor.GOLD))
+                        ))
+                        .clickEvent(ClickEvent.runCommand("/powerplugins premium"))
+                )
+                .append(Component.newline())
+                .append(
+                    Component.text("[", NamedTextColor.GRAY)
+                        .append(Component.text("Private Plugins", NamedTextColor.GRAY))
+                        .append(Component.text("]", NamedTextColor.GRAY))
+                        .hoverEvent(HoverEvent.showText(
+                            Component.text("Selfmade plugins used for this server.", NamedTextColor.GRAY)
+                                .append(Component.newline())
+                                .append(Component.newline())
+                                .append(Component.text("/plugins private", NamedTextColor.GRAY))
+                        ))
+                        .clickEvent(ClickEvent.runCommand("/powerplugins private"))
+                )
+                .append(Component.newline())
+                .append(Component.newline())
+                .append(getFooter(0))
+                .build();
+    
+            player.sendMessage(component);
             return true;
-        }else
-        if(args[0].equalsIgnoreCase("free")){
-            List<JSONMessage> free = getPages("free", color(HEADER_FREE));
-            if(free.isEmpty()){
-                player.sendMessage(color("&cThis category doesn't have any Plugins listed."));
-                return true;
-            }
-            
-            if(args.length == 1){
-                clear(player);
-                JSONMessage json = free.get(0);
-                
-                json.send(player);
-                return true;
-            }else{
-                int page;
-                try{
-                    page = Integer.parseInt(args[1]);
-                }catch(NumberFormatException ex){
-                    player.sendMessage(color("&cInvalid argument provided! Expected number but got %s", args[1]));
-                    return true;
-                }
-                
-                if(page <= 0){
-                    player.sendMessage(color("&cYou can't provide a number smaller than 1."));
-                    return true;
-                }else
-                if(page > free.size()){
-                    player.sendMessage(color("&cThe provided Number was larger than the available pages."));
-                    player.sendMessage(color("&cCategory Free has a total of %d pages.", free.size()));
-                    return true;
-                }else{
-                    clear(player);
-                    JSONMessage json = free.get(page - 1);
-                    
-                    json.send(player);
-                    return true;
-                }
-            }
-        }else
-        if(args[0].equalsIgnoreCase("premium")){
-            List<JSONMessage> premium = getPages("premium", color(HEADER_PREMIUM));
-            if(premium.isEmpty()){
-                player.sendMessage(color("&cThis category doesn't have any Plugins listed."));
-                return true;
-            }
-    
-            if(args.length == 1){
-                clear(player);
-                JSONMessage json = premium.get(0);
-        
-                json.send(player);
-                return true;
-            }else{
-                int page;
-                try{
-                    page = Integer.parseInt(args[1]);
-                }catch(NumberFormatException ex){
-                    player.sendMessage(color("&cInvalid argument provided! Expected number but got %s", args[1]));
-                    return true;
-                }
-        
-                if(page <= 0){
-                    player.sendMessage(color("&cYou can't provide a number smaller than 1."));
-                    return true;
-                }else
-                if(page > premium.size()){
-                    player.sendMessage(color("&cThe provided Number was larger than the available pages."));
-                    player.sendMessage(color("&cCategory Premium has a total of %d", premium.size()));
-                    return true;
-                }else{
-                    clear(player);
-                    JSONMessage json = premium.get(page - 1);
-            
-                    json.send(player);
-                    return true;
-                }
-            }
-        }else
-        if(args[0].equalsIgnoreCase("private")){
-            List<JSONMessage> priv = getPages("private", color(HEADER_PRIVATE));
-            if(priv.isEmpty()){
-                player.sendMessage(color("&cThis category doesn't have any Plugins listed."));
-                return true;
-            }
-    
-            if(args.length == 1){
-                clear(player);
-                JSONMessage json = priv.get(0);
-        
-                json.send(player);
-                return true;
-            }else{
-                int page;
-                try{
-                    page = Integer.parseInt(args[1]);
-                }catch(NumberFormatException ex){
-                    player.sendMessage(color("&cInvalid argument provided! Expected number but got %s", args[1]));
-                    return true;
-                }
-        
-                if(page <= 0){
-                    player.sendMessage(color("&cYou can't provide a number smaller than 1."));
-                    return true;
-                }else
-                if(page > priv.size()){
-                    player.sendMessage(color("&cThe provided Number was larger than the available pages."));
-                    player.sendMessage(color("&cCategory Private has a total of %d", priv.size()));
-                    return true;
-                }else{
-                    clear(player);
-                    JSONMessage json = priv.get(page - 1);
-            
-                    json.send(player);
-                    return true;
-                }
-            }
         }else
         if(args[0].equalsIgnoreCase("info")){
             if(args.length == 1){
-                player.sendMessage(color("&cPlease mention a plugin you want info from!"));
+                player.sendMessage(Component.text("Please provide the name of a plugin.", NamedTextColor.RED));
                 return true;
             }
             
             Plugin pl = Bukkit.getPluginManager().getPlugin(args[1]);
             if(pl == null){
-                player.sendMessage(color("&cThe provided plugin %s doesn't exist!", args[1]));
+                player.sendMessage(
+                    Component.text("The provided plugin doesn't exist!")
+                        .append(Component.newline())
+                        .append(Component.text("Make sure you typed the name correctly."))
+                        .color(NamedTextColor.RED)
+                );
                 return true;
             }
     
-            FileManager.PluginFile pluginFile = plugin.getFileManager().getPluginFile(pl);
-            if(pluginFile == null){
-                player.sendMessage(color("&cThe provided plugin %s doesn't exist!", args[1]));
+            FileManager.PluginFile file = plugin.getFileManager().getPluginFile(pl);
+            if(file == null){
+                player.sendMessage(
+                    Component.text("The provided plugin doesn't exist!")
+                        .append(Component.newline())
+                        .append(Component.text("Make sure you typed the name correctly."))
+                        .color(NamedTextColor.RED)
+                );
                 return true;
             }
-    
-            clear(player);
-            JSONMessage json = getPluginInfo(pluginFile);
             
-            json.send(player);
+            TextComponent info = getAdvancedPluginInfo(file);
+            if(info == null){
+                player.sendMessage(Component.text("Could not retrieve information about the plugin!", NamedTextColor.RED));
+                return true;
+            }
+            
+            clear(player);
+            player.sendMessage(info);
             return true;
         }else{
-            player.sendMessage(color("&cUnknown argument %s. Run /pl for the plugins.", args[0]));
-            return true;
+            Category category = Category.getFromName(args[0]);
+            if(category == null){
+                player.sendMessage(Component.text("Received unknown category " + args[0], NamedTextColor.RED));
+                return true;
+            }
+            
+            List<TextComponent> pages = getPages(category);
+            
+            if(pages.isEmpty()){
+                player.sendMessage(Component.text("This category does not have any plugins listed.", NamedTextColor.RED));
+                return true;
+            }
+            
+            if(args.length == 1){
+                clear(player);
+                player.sendMessage(pages.get(0));
+                
+                return true;
+            }else{
+                int page;
+                try{
+                    page = Integer.parseInt(args[1]);
+                }catch(NumberFormatException ignored){
+                    player.sendMessage(Component.text("Invalid argument! Expected number but got " + args[1], NamedTextColor.RED));
+                    return true;
+                }
+                
+                if(page <= 0){
+                    player.sendMessage(Component.text("You can't provide a page number below 1.", NamedTextColor.RED));
+                    return true;
+                }else
+                if(page > pages.size()){
+                    player.sendMessage(
+                        Component.text("Received a too high number!")
+                            .append(Component.newline())
+                            .append(
+                                Component.text("Category ")
+                                    .append(Component.text(category.getTitle()))
+                                    .append(Component.text(" only has a total of "))
+                                    .append(Component.text(pages.size()))
+                                    .append(Component.text(" pages."))
+                                    .color(NamedTextColor.RED)
+                            )
+                    );
+                    return true;
+                }else{
+                    clear(player);
+                    player.sendMessage(pages.get(page - 1));
+                    return true;
+                }
+            }
         }
     }
     
@@ -266,67 +208,68 @@ public class CmdPowerPlugins implements CommandExecutor, TabCompleter{
     }
     
     private void clear(Player player){
-        for(int i = 0; i < 20; i++)
+        for(int i = 0; i < 20; i++){
             player.sendMessage("");
+        }
     }
     
-    private String color(String text, Object... replace){
-        return ChatColor.translateAlternateColorCodes('&', String.format(text, replace));
+    private TextComponent getHeader(Category category){
+        return switch(category){
+            case FREE -> Component.text()
+                .append(Component.text("---------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .append(Component.text("[ ", NamedTextColor.GRAY))
+                .append(Component.text("Free", NamedTextColor.GREEN))
+                .append(Component.text(" ]", NamedTextColor.GRAY))
+                .append(Component.text("---------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .build();
+            case PREMIUM -> Component.text()
+                .append(Component.text("---------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .append(Component.text("[ ", NamedTextColor.GRAY))
+                .append(Component.text("Premium", NamedTextColor.GOLD))
+                .append(Component.text(" ]", NamedTextColor.GRAY))
+                .append(Component.text("---------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .build();
+            case PRIVATE -> Component.text()
+                .append(Component.text("---------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .append(Component.text("[ ", NamedTextColor.GRAY))
+                .append(Component.text("Private", NamedTextColor.GRAY))
+                .append(Component.text(" ]", NamedTextColor.GRAY))
+                .append(Component.text("---------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .build();
+        };
     }
     
-    private List<FileManager.PluginFile> getPlugins(String category){
-        return plugin.retrievePlugins().stream()
-                .map(plugin.getFileManager()::getPluginFile)
-                .filter(pl -> pl.getCategory().equalsIgnoreCase(category))
-                .collect(Collectors.toList());
+    private TextComponent getFooter(int page){
+        if(page == 0){
+            return Component.text("-------------------------------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH);
+        }else{
+            return Component.text()
+                .append(Component.text("--------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .append(Component.text("[ ", NamedTextColor.GRAY))
+                .append(Component.text("Page " + page, BRAND_COLOUR))
+                .append(Component.text(" ]", NamedTextColor.GRAY))
+                .append(Component.text("--------------", NamedTextColor.GRAY, TextDecoration.STRIKETHROUGH))
+                .build();
+        }
     }
     
-    private List<JSONMessage> getPages(String category, String title){
+    private List<TextComponent> getPages(Category category){
         List<List<FileManager.PluginFile>> rawPages = Lists.partition(getPlugins(category), 7);
-        List<JSONMessage> pages = new ArrayList<>();
-        int curPage = 0;
-        final int total = rawPages.size();
+        List<TextComponent> pages = new ArrayList<>();
+        
+        int currentPage = 0;
+        final int totalPages = rawPages.size();
         
         for(List<FileManager.PluginFile> page : rawPages){
-            curPage++;
-            JSONMessage json = JSONMessage.create();
+            currentPage++;
             
-            if(curPage > 1){
-                json.then(color(NAV_PREV_ACTIVE))
-                        .tooltip(color("&7Page %d", curPage - 1))
-                        .runCommand("/powerplugins " + category + " " + (curPage - 1));
-            }else{
-                json.then(color(NAV_PREV_ACTIVE))
-                        .tooltip(color("&7Back to selection."))
-                        .runCommand("/powerplugins");
-            }
-            
-            json.then(title);
-    
-            if(curPage < total){
-                json.then(color(NAV_NEXT_ACTIVE))
-                        .tooltip(color("&7Page %d", curPage + 1))
-                        .runCommand("/powerplugins " + category + " " + (curPage + 1));
-            }else{
-                json.then(color(NAV_NEXT_INACTIVE));
-            }
+            TextComponent.Builder component = Component.text()
+                .append(getPrevNavButton(category, currentPage))
+                .append(getHeader(category))
+                .append(getNextNavButton(category, currentPage, totalPages));
             
             for(FileManager.PluginFile file : page){
-                String author = file.getAuthors().isEmpty() ? "Unknown" : file.getAuthors().get(0);
-                
-                json.newline()
-                    .then(color(PLUGIN_SIMPLE
-                            .replace("{name}", file.getName())
-                            .replace("{author}", author)
-                            .replace("{version}", file.getVersion())
-                    ))
-                    .tooltip(ChatColor.translateAlternateColorCodes('&', String.format(
-                            "%s\n" +
-                            "\n" +
-                            "&aClick for more information.",
-                            file.getDescription().length() > 30 ? file.getDescription().substring(0, 25) + "..." : file.getDescription()
-                    )))
-                    .runCommand("/powerplugins info " + file.getName());
+                component.append(getSimplePluginInfo(file));
             }
             
             if(page.size() < 7){
@@ -334,119 +277,242 @@ public class CmdPowerPlugins implements CommandExecutor, TabCompleter{
                 
                 while(padding < 7){
                     padding++;
-                    
-                    json.newline();
+    
+                    component.append(Component.newline());
                 }
             }
             
-            json.newline();
+            component.append(Component.newline())
+                .append(getPrevNavButton(category, currentPage))
+                .append(getFooter(currentPage))
+                .append(getNextNavButton(category, currentPage, totalPages));
             
-            if(curPage > 1){
-                json.then(color(NAV_PREV_ACTIVE))
-                    .tooltip(color("&7Page %d", curPage - 1))
-                    .runCommand("/powerplugins " + category + " " + (curPage - 1));
-            }else{
-                json.then(color(NAV_PREV_ACTIVE))
-                    .tooltip(color("&7Back to selection."))
-                    .runCommand("/powerplugins");
-            }
-            
-            json.then(color(FOOTER_PAGE.replace("{page}", String.valueOf(curPage))));
-            
-            if(curPage < total){
-                json.then(color(NAV_NEXT_ACTIVE))
-                    .tooltip(color("&7Page %d", curPage + 1))
-                    .runCommand("/powerplugins " + category + " " + (curPage + 1));
-            }else{
-                json.then(color(NAV_NEXT_INACTIVE));
-            }
-            
-            pages.add(json);
+            pages.add(component.build());
         }
         
         return pages;
     }
     
-    private JSONMessage getPluginInfo(FileManager.PluginFile pluginFile){
-        String category;
-        String title;
-        switch(pluginFile.getCategory()){
-            case "free":
-                category = color(CAT_FREE);
-                title = color(HEADER_FREE);
-                break;
-            case "premium":
-                category = color(CAT_PREMIUM);
-                title = color(HEADER_PREMIUM);
-                break;
-            default:
-            case "private":
-                category = color(CAT_PRIVATE);
-                title = color(HEADER_PRIVATE);
-                break;
+    private List<FileManager.PluginFile> getPlugins(Category category){
+        return plugin.retrievePlugins().stream()
+            .map(plugin.getFileManager()::getPluginFile)
+            .filter(Objects::nonNull)
+            .filter(file -> file.getCategory().equalsIgnoreCase(category.getTitle()))
+            .collect(Collectors.toList());
+    }
+    
+    private TextComponent getSimplePluginInfo(FileManager.PluginFile file){
+        String author = file.getAuthors().isEmpty() ? "Unknown Author" : file.getAuthors().get(0);
+        String description = file.getDescription().length() > 30 ? file.getDescription().substring(0, 25) + "..." : file.getDescription();
+        
+        return Component.text()
+            .append(Component.newline())
+            .append(
+                Component.text(file.getName(), BRAND_COLOUR)
+                    .append(Component.text(" - ", NamedTextColor.GRAY))
+                    .append(Component.text(author, NamedTextColor.WHITE))
+                    .append(Component.text(" [", NamedTextColor.GRAY))
+                    .append(Component.text(file.getVersion(), BRAND_COLOUR))
+                    .append(Component.text("]", NamedTextColor.GRAY))
+            ).hoverEvent(
+                HoverEvent.showText(
+                    Component.text(description, NamedTextColor.GRAY)
+                        .append(Component.newline())
+                        .append(Component.newline())
+                        .append(Component.text("Click for more information.", BRAND_COLOUR))
+                )
+            ).clickEvent(
+                ClickEvent.runCommand("/powerplugins info " + file.getName())
+            ).build();
+    }
+    
+    private TextComponent getAdvancedPluginInfo(FileManager.PluginFile file){
+        Category category = Category.getFromName(file.getCategory());
+        if(category == null){
+            return null;
         }
         
-        JSONMessage json = JSONMessage.create(color(NAV_PREV_ACTIVE))
-                .tooltip(color("&7Back to Plugin category %s.", category))
-                .runCommand("/powerplugins " + pluginFile.getCategory())
-                .then(color(title))
-                .then(color(NAV_NEXT_INACTIVE))
-                .newline()
-                .then(color(PLUGIN_NAME
-                        .replace("{name}", pluginFile.getName())
-                        .replace("{version}", pluginFile.getVersion())
-                ))
-                .newline()
-                .newline()
-                .then(color(PLUGIN_AUTHORS.replace("{authors}", plugin.getAuthors(pluginFile.getAuthors()))));
+        TextComponent.Builder component = Component.text()
+            .append(
+                Component.text("[", NamedTextColor.GRAY)
+                    .append(Component.text("<", BRAND_COLOUR))
+                    .append(Component.text("]", NamedTextColor.GRAY))
+                    .hoverEvent(
+                        HoverEvent.showText(Component.text("Back to category " + category.getTitle(), NamedTextColor.GRAY))
+                    ).clickEvent(
+                        ClickEvent.runCommand("/powerplugins " + category.getTitle())
+                    )
+            ).append(getHeader(category))
+            .append(getNextNavButton(category))
+            .append(Component.newline())
+            
+            .append(Component.text(file.getName(), BRAND_COLOUR))
+            .append(Component.text(" [", NamedTextColor.GRAY))
+            .append(Component.text(file.getVersion(), NamedTextColor.WHITE))
+            .append(Component.text("]", NamedTextColor.GRAY))
+            .append(Component.newline())
+            .append(Component.newline())
+            
+            .append(Component.text("Authors: ", NamedTextColor.GRAY))
+            .append(Component.text(plugin.getAuthors(file.getAuthors())))
+            .append(Component.newline());
         
-        if(!pluginFile.getDepends().isEmpty() || !pluginFile.getSoftDepends().isEmpty()){
-            Map<String, Boolean> dependencies = new HashMap<>();
-            
-            if(!pluginFile.getDepends().isEmpty()){
-                for(String depends : pluginFile.getDepends())
-                    dependencies.put(depends, true);
-            }
-            
-            if(!pluginFile.getSoftDepends().isEmpty()){
-                for(String softDepend : pluginFile.getSoftDepends())
-                    dependencies.put(softDepend, false);
-            }
-            
-            Map<String, Boolean> sorted = new TreeMap<>(dependencies);
-            
-            json.newline()
-                .then(color(PLUGIN_DEPENDENCIES));
-            for(String dependency : sorted.keySet()){
-                json.newline()
-                    .then(color("&7- &b%s", dependency))
-                    .tooltip(color(
-                            "&7Type: &b%s\n" +
-                            "\n" +
-                            "&7Click to view Information about %s.\n" +
-                            "&cNote: The dependency Type is based on the plugins' plugin.yml!",
-                            sorted.get(dependency) ? "Depend &7[&cRequired&7]" : "Softdepend &7[&aNot Required&7]",
-                            dependency
-                    ))
-                    .runCommand("/powerplugins info " + dependency);
-            }
+        Map<String, Boolean> dependencies = new TreeMap<>();
+        
+        for(String depends : file.getDepends()){
+            dependencies.put(depends, true);
         }
         
-        json.newline()
-            .then(color(PLUGIN_URL.replace("{url}", pluginFile.getUrl())))
-            .tooltip(color("&7Click to view the plugin page."))
-            .openURL(pluginFile.getUrl())
-            .newline()
-            .then(color(PLUGIN_DESCRIPTION))
-            .newline()
-            .then(color("&b%s", pluginFile.getDescription()))
-            .newline()
-            .then(color(NAV_PREV_ACTIVE))
-            .tooltip(color("&7Back to Plugin category %s.", category))
-            .runCommand("/powerplugins " + pluginFile.getCategory())
-            .then(color(FOOTER_MAIN))
-            .then(color(NAV_NEXT_INACTIVE));
+        for(String softDepends : file.getSoftDepends()){
+            dependencies.put(softDepends, false);
+        }
         
-        return json;
+        if(!dependencies.isEmpty()){
+            component.append(Component.text("Dependencies:", NamedTextColor.GRAY));
+            
+            for(String dependency : dependencies.keySet()){
+                component.append(Component.newline())
+                    .append(getDependencyInfo(dependency, dependencies.get(dependency)));
+            }
+            
+            component.append(Component.newline());
+        }
+        
+        component.append(Component.newline())
+            .append(Component.text("Plugin Page: ", NamedTextColor.GRAY))
+            .append(
+                Component.text(file.getUrl(), BRAND_COLOUR)
+                    .hoverEvent(
+                        HoverEvent.showText(Component.text("Click to open URL", NamedTextColor.GRAY))
+                    ).clickEvent(
+                        ClickEvent.openUrl(file.getUrl())
+                    )
+            ).append(Component.newline())
+            
+            .append(Component.text("Description:", NamedTextColor.GRAY))
+            .append(Component.newline())
+            .append(Component.text(file.getDescription(), NamedTextColor.WHITE))
+            .append(Component.newline())
+    
+            .append(
+                Component.text("[", NamedTextColor.GRAY)
+                    .append(Component.text("<", BRAND_COLOUR))
+                    .append(Component.text("]", NamedTextColor.GRAY))
+                    .hoverEvent(
+                        HoverEvent.showText(Component.text("Back to category " + category.getTitle(), NamedTextColor.GRAY))
+                    ).clickEvent(
+                        ClickEvent.runCommand("/powerplugins " + category.getTitle())
+                    )
+            ).append(getHeader(category))
+            .append(getNextNavButton(category));
+        
+        return component.build();
+    }
+    
+    private TextComponent getPrevNavButton(Category category, int page){
+        TextComponent component = Component.empty()
+            .append(
+                Component.text("[", NamedTextColor.GRAY)
+                    .append(Component.text("<", BRAND_COLOUR))
+                    .append(Component.text("]", NamedTextColor.GRAY))
+            );
+        
+        if(page > 1){
+            return component.hoverEvent(
+                HoverEvent.showText(Component.text("Page " + (page - 1), NamedTextColor.GRAY))
+            ).clickEvent(
+                ClickEvent.runCommand("/powerplugins " + category.getTitle() + " " + (page - 1))
+            );
+        }else{
+            return component.hoverEvent(
+                HoverEvent.showText(Component.text("Back to selection", NamedTextColor.GRAY))
+            ).clickEvent(
+                ClickEvent.runCommand("/powerplugins")
+            );
+        }
+    }
+    
+    private TextComponent getNextNavButton(Category category){
+        return getNextNavButton(category, 0, 0);
+    }
+    
+    private TextComponent getNextNavButton(Category category, int page, int totalPages){
+        TextComponent component = Component.empty();
+        
+        if(page < totalPages){
+            return component.append(
+                Component.text("[", NamedTextColor.GRAY)
+                    .append(Component.text(">", BRAND_COLOUR))
+                    .append(Component.text("]", NamedTextColor.GRAY))
+            ).hoverEvent(
+                HoverEvent.showText(Component.text("Page " + (page + 1), NamedTextColor.GRAY))
+            ).clickEvent(
+                ClickEvent.runCommand("/powerplugins " + category.getTitle() + " " + (page + 1))
+            );
+        }else{
+            return component.append(Component.text("[>]", NamedTextColor.GRAY));
+        }
+    }
+    
+    private TextComponent getDependencyInfo(String dependency, boolean required){
+        TextComponent.Builder hover = Component.text()
+            .append(Component.text("Type: ", NamedTextColor.GRAY));
+        
+        if(required){
+            hover.append(Component.text("Depend ", BRAND_COLOUR))
+                .append(Component.text("[", NamedTextColor.GRAY))
+                .append(Component.text("Required", NamedTextColor.RED))
+                .append(Component.text("]", NamedTextColor.GRAY));
+        }else{
+            hover.append(Component.text("Soft Depend ", BRAND_COLOUR))
+                .append(Component.text("[", NamedTextColor.GRAY))
+                .append(Component.text("Not Required", NamedTextColor.GREEN))
+                .append(Component.text("]", NamedTextColor.GRAY));
+        }
+        
+        hover.append(Component.newline())
+            .append(Component.newline())
+            .append(
+                Component.text("Click to view more information if available.")
+                    .append(Component.newline())
+                    .append(Component.text("Note: The dependency type is determined through the plugin's plugin.yml"))
+                    .color(NamedTextColor.GRAY)
+            );
+        
+        return Component.text("- ", NamedTextColor.GRAY)
+            .append(
+                Component.text(dependency, BRAND_COLOUR)
+            ).hoverEvent(
+                HoverEvent.showText(hover)
+            ).clickEvent(
+                ClickEvent.runCommand("/powerplugins info " + dependency)
+            );
+    }
+    
+    private enum Category{
+        FREE("Free", NamedTextColor.GREEN),
+        PREMIUM("Premium", NamedTextColor.GOLD),
+        PRIVATE("Private", NamedTextColor.GRAY);
+        
+        final String title;
+        final NamedTextColor color;
+        
+        Category(String title, NamedTextColor color){
+            this.title = title;
+            this.color = color;
+        }
+        
+        public static Category getFromName(String title){
+            for(Category category : values()){
+                if(category.getTitle().equalsIgnoreCase(title))
+                    return category;
+            }
+            
+            return null;
+        }
+        
+        public String getTitle(){
+            return title;
+        }
     }
 }

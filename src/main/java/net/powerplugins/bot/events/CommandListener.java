@@ -1,8 +1,9 @@
 package net.powerplugins.bot.events;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.powerplugins.bot.PowerPlugins;
 import net.powerplugins.bot.commands.CmdPowerPlugins;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,7 +32,7 @@ public class CommandListener implements Listener{
             
             Command command = plugin.getCommand("powerplugins");
             if(command == null){
-                event.getPlayer().sendMessage(ChatColor.RED + "There was an error processing the command!");
+                event.getPlayer().sendMessage(Component.text("Could not process the command!", NamedTextColor.RED));
                 return;
             }
             

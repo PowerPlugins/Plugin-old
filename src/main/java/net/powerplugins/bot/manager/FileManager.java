@@ -3,11 +3,9 @@ package net.powerplugins.bot.manager;
 import net.powerplugins.bot.PowerPlugins;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileManager{
@@ -31,7 +29,6 @@ public class FileManager{
         List<String> softDepends = plugin.getDescription().getSoftDepend();
         
         if(config.get("info.name") == null){
-            
             config.set("info.name", plugin.getName());
             config.set("info.authors", plugin.getDescription().getAuthors());
             config.set("info.version", plugin.getDescription().getVersion());
@@ -40,40 +37,19 @@ public class FileManager{
             config.set("info.url", "");
             config.set("info.description", "No description provided");
             config.set("info.category", "private");
-            
-            try{
-                config.save(file);
-                
-                return new PluginFile(
-                        plugin.getDescription(),
-                        config
-                );
-            }catch(IOException ex){
-                return null;
-            }
         }else{
             config.set("info.depends", depends);
             config.set("info.softdepends", softDepends);
-            
-            try{
-                config.save(file);
-    
-                return new PluginFile(
-                        config.getString("info.name"),
-                        config.getStringList("info.authors"),
-                        config.getString("info.version"),
-                        config.getStringList("info.depends"),
-                        config.getStringList("info.softdepends"),
-                        config.getString("info.url"),
-                        config.getString("info.description"),
-                        config.getString("info.category"),
-                        config
-                );
-            }catch(IOException ex){
-                return null;
-            }
         }
         
+        try{
+            config.save(file);
+            
+            return new PluginFile(config);
+        }catch(IOException ex){
+            return null;
+        }
+    
     }
     
     public boolean isDifferent(Plugin plugin, PluginFile pluginFile){
@@ -114,7 +90,7 @@ public class FileManager{
     private File getFile(String name){
         File file = new File(folder, name + ".yml");
         if(folder.mkdirs())
-            instance.getLogger().info("Created folder 'plugins'");
+            instance.getLogger().info("Created folder 'PowerPlugins/plugins/'");
         
         if(file.exists())
             return file;
@@ -144,31 +120,17 @@ public class FileManager{
         
         private final YamlConfiguration configuration;
         
-        public PluginFile(PluginDescriptionFile desc, YamlConfiguration configuration){
-            this(
-                    desc.getName(),
-                    desc.getAuthors(),
-                    desc.getVersion(),
-                    new ArrayList<>(),
-                    new ArrayList<>(),
-                    "",
-                    "No description provided",
-                    "private",
-                    configuration
-            );
-        }
         
-        public PluginFile(String name, List<String> authors, String version, List<String> depends, List<String> softDepends,
-                          String url, String description, String category, YamlConfiguration configuration){
-            this.name = name;
-            this.authors = authors;
-            this.version = version;
-            this.depends = depends;
-            this.softDepends = softDepends;
+        public PluginFile(YamlConfiguration configuration){
+            this.name = configuration.getString("info.name");
+            this.authors = configuration.getStringList("info.authors");
+            this.version = configuration.getString("info.version");
+            this.depends = configuration.getStringList("info.depends");
+            this.softDepends = configuration.getStringList("info.softdepends");
             
-            this.url = url;
-            this.description = description;
-            this.category = category;
+            this.url = configuration.getString("info.url");
+            this.description = configuration.getString("info.description");
+            this.category = configuration.getString("info.category");
             
             this.configuration = configuration;
         }
