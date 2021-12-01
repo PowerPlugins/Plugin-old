@@ -20,7 +20,7 @@ dependencies {
     implementation('club.minnced:discord-webhooks:0.7.2')
     implementation('com.google.guava:guava:31.0.1-jre')
 
-    compileOnly('io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT')
+    compileOnly('io.papermc.paper:paper-api:1.18-R0.1-SNAPSHOT')
     compileOnly('org.jetbrains:annotations:23.0.0')
 }
 
