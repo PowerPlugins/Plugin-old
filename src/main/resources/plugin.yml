@@ -3,7 +3,7 @@ version: '1.4.7'
 
 author: Andre_601
 
-api-version: '1.13'
+api-version: '1.19'
 
 main: net.powerplugins.bot.PowerPlugins
 

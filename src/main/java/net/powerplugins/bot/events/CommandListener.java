@@ -9,6 +9,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.server.TabCompleteEvent;
+import org.bukkit.plugin.Plugin;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandListener implements Listener{
     
@@ -39,5 +44,53 @@ public class CommandListener implements Listener{
             final CmdPowerPlugins plugins = plugin.getCmdPowerPlugins();
             plugins.onCommand(event.getPlayer(), command, "", args);
         }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onCommandTabComplete(TabCompleteEvent event){
+        String command = event.getBuffer();
+        if(!command.startsWith("/pl") && !command.startsWith("/plugins"))
+            return;
+        
+        String[] args = Arrays.copyOfRange(command.split("\s"), 1, command.split("\s").length);
+        if(args.length == 0){
+            event.setCompletions(Arrays.asList("free", "info", "premium", "private"));
+            return;
+        }
+        
+        if(args.length == 1){
+            List<String> suggestions = getPartialMatches(args[0], Arrays.asList("free", "info", "premium", "private"));
+            
+            event.setCompletions(suggestions);
+        }else
+        if(args.length == 2){
+            if(!args[0].equalsIgnoreCase("info")){
+                event.setCompletions(Collections.emptyList());
+                return;
+            }
+            
+            List<String> plugins = plugin.retrievePlugins().stream()
+                .map(Plugin::getName)
+                .collect(Collectors.toList());
+            List<String> suggestions = getPartialMatches(args[1], plugins);
+            
+            event.setCompletions(suggestions);
+        }
+    }
+    
+    public static List<String> getPartialMatches(String token, Collection<String> originals){
+        if(originals == null || originals.isEmpty())
+            return Collections.emptyList();
+        
+        if(token == null || token.isEmpty())
+            return new ArrayList<>(originals);
+        
+        List<String> matches = new ArrayList<>();
+        for(String str : originals){
+            if(str.length() >= token.length() && str.regionMatches(true, 0, token, 0, token.length()))
+                matches.add(str);
+        }
+        
+        return matches;
     }
 }

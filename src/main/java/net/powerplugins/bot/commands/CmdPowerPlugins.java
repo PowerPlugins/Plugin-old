@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.powerplugins.bot.PowerPlugins;
+import net.powerplugins.bot.events.CommandListener;
 import net.powerplugins.bot.manager.FileManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -22,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CmdPowerPlugins implements CommandExecutor, TabCompleter{
     
@@ -192,19 +192,22 @@ public class CmdPowerPlugins implements CommandExecutor, TabCompleter{
     
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args){
-        List<String> arguments = new ArrayList<>();
+        if(args.length == 1){
+            return CommandListener.getPartialMatches(args[0], Arrays.asList("free", "info", "premium", "private"));
+        }
         
-        arguments.add("free");
-        arguments.add("premium");
-        arguments.add("private");
-        arguments.add("info");
-        
-        arguments.addAll(Stream.of(Bukkit.getPluginManager().getPlugins())
+        if(args.length == 2){
+            if(!args[1].equalsIgnoreCase("info"))
+                return Collections.emptyList();
+            
+            List<String> plugins = plugin.retrievePlugins().stream()
                 .map(Plugin::getName)
-                .sorted()
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+            
+            return CommandListener.getPartialMatches(args[1], plugins);
+        }
         
-        return arguments;
+        return Collections.emptyList();
     }
     
     private void clear(Player player){
